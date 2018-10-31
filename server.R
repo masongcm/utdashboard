@@ -16,6 +16,7 @@ server <- function(input, output) {
     )
   })
   
+  # LINE PLOT ---------------------------------------------------------
   # prepare plot data
   lplotdata <- reactive({
     activities %>%
@@ -46,6 +47,7 @@ server <- function(input, output) {
     }
   )
   
+  # AREA PLOT ---------------------------------------------------------
   # prepare plot data 2
   aplotdata <- reactive({
     activities %>%
@@ -76,5 +78,45 @@ server <- function(input, output) {
         commonopts
     }
   )
+  
+  # BAR PLOT ---------------------------------------------------------
+  
+  # position of last month in slider range
+  pos <- reactive({ which(names(ymgrid)==input$sliderDate[2]) })
+  # choose last 3 months and same months in last year
+  range1 <- reactive({ ymd(ymgrid[(pos()-2):pos()]) })
+  range2 <- reactive({ ymd(ymgrid[(pos()-14):(pos()-12)]) })
+  range <- reactive({ c(range2(), range1()) })
+  
+  # prepare data
+  bplotdata <- reactive({
+    activities %>%
+    filter(monthact %in% range()) %>% # filter dates
+    mutate(period = ifelse(monthact %in% range1(), "This year", "Last year")) %>% #distinguish year
+    gather(price, guests, full, conc) %>% # gather concession vs full price
+    group_by(period, monthact, activity, price, manual) %>%
+    summarise(guests = sum(guests)) %>% 
+    ungroup() %>%
+    arrange(monthact, activity, price, manual) %>%
+    mutate(monthact2 = factor(monthact))
+  })
+  
+  # rearrange month factor
+  #bplotdata()$monthact2 <- reactive({ factor(bplotdata()$monthact) })
+  #levels(bplotdata()$monthact2) <- reactive({ strftime(levels(bplotdata()$monthact2), format = "%b\n%y") })
+  #bplotdata()$monthact2 <- reactive({ factor(bplotdata()$monthact2,levels(bplotdata()$monthact2)[c(1,4,2,5,3,6)]) })
+  
+  # plot
+  output$bargraph <- renderPlot({
+    ggplot(bplotdata(), aes(x=monthact2, y=guests, fill=eval(as.name(input$break_sel)), alpha=period)) +
+      geom_bar(stat = "identity", position = "stack") + facet_grid(~ activity) + 
+      scale_x_discrete("Month", labels = strftime(levels(bplotdata()$monthact2), format = "%b\n%y")) +
+      ylab("Number of guests") +
+      scale_alpha_manual(values = c(.5, 1)) +
+      theme_light() + theme(legend.position="bottom") + 
+      guides(alpha = FALSE) + labs(fill = names(bdown[which(bdown==input$break_sel)]))
+    
+  })
+  
   
 }

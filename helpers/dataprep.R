@@ -26,3 +26,9 @@ measures <- c(
   "Num. tours" = "ntours",
   "Average Capacity (guests/tour)" = "capacity"
 )
+
+# breakdown labels
+bdown <- c(
+  "Full vs. Concession" = "price",
+  "Group vs. Widget" = "manual"
+)

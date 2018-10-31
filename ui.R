@@ -24,7 +24,7 @@ ui <- fluidPage(
         grid = FALSE, 
         force_edges = TRUE,
         choices = names(ymgrid),
-        selected = c(tail(names(ymgrid), 12)[1], tail(names(ymgrid), 1))
+        selected = c(tail(names(ymgrid), 12)[1], tail(names(ymgrid), 1)) # start with previous year range
       ),
       
       # Tour selection
@@ -39,13 +39,21 @@ ui <- fluidPage(
                   label = "Select measure",
                   choices = measures,
                   selected = "total"
+      ),
+      
+      # Column breakdown selection
+      selectInput("break_sel",
+                  label = "Break bars by:",
+                  choices = bdown,
+                  selected = "price"
       )
     ),
     mainPanel(
       
-      # line plot
+      # plots
       plotOutput("linegraph"),
-      plotOutput("areagraph")
+      plotOutput("areagraph"),
+      plotOutput("bargraph")
       
     )
   )
