@@ -1,6 +1,6 @@
 
 # import data
-filename <- here::here("data/tours_20181021.csv")
+filename <- here::here("data/tours_current.csv")
 utdata <- utclean(filename)
 activities <- utdata$activities
 
@@ -22,9 +22,9 @@ tourColours <- setNames(c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
 
 # measure labels
 measures <- c(
-  "Num. guests" = "total",
-  "Num. tours" = "ntours",
-  "Average Capacity (guests/tour)" = "capacity"
+  "Num. guests per month" = "total",
+  "Num. tours per month" = "ntours",
+  "Average Capacity (guests/tour) per month" = "capacity"
 )
 
 # breakdown labels

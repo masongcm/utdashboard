@@ -21,7 +21,7 @@ server <- function(input, output) {
   lplotdata <- reactive({
     activities %>%
       filter(
-        dateact %within% daterange() # daterange must be called as a function! https://shiny.rstudio.com/tutorial/written-tutorial/lesson6/
+        dateact %within% daterange() # daterange is reactive
       ) %>%
       group_by(monthact, activity) %>%
       summarise(full = sum(full), 
@@ -43,7 +43,6 @@ server <- function(input, output) {
         ylab(names(measures[which(measures == input$meas_sel)])) +
         labs(color="Tour:") + scale_color_manual(values = tourColours) +
         commonopts
-      
     }
   )
   
@@ -54,13 +53,14 @@ server <- function(input, output) {
       filter(
         dateact %within% daterange() # daterange must be called as a function! https://shiny.rstudio.com/tutorial/written-tutorial/lesson6/
       ) %>%
-      group_by(monthact, manual) %>%
+      gather(price, guests, full, conc) %>% # gather concession vs full price
+      group_by(monthact, !! rlang::sym(input$break_sel)) %>% # GOTCHA: evaluate with !! in dplyr
       summarise( 
         total = sum(total),
         ntours = n(),
         capacity = total/ntours) %>%
       ungroup() %>%
-      complete(monthact, manual, fill = list(0)) %>%
+      complete(monthact, !! rlang::sym(input$break_sel), fill = list(0)) %>%
       mutate(
         total = replace_na(total, 0),
         ntours = replace_na(ntours, 0),
@@ -71,10 +71,10 @@ server <- function(input, output) {
   output$areagraph <- renderPlot(
     {
       aplotdata() %>%
-        ggplot(aes(x=monthact, y=eval(as.name(input$meas_sel)), fill = manual)) + 
+        ggplot(aes(x=monthact, y=eval(as.name(input$meas_sel)), fill = eval(as.name(input$break_sel)))) + 
         geom_area() +
         ylab(names(measures[which(measures == input$meas_sel)])) +
-        labs(fill="Booking type:") +
+        labs(fill = names(bdown[which(bdown==input$break_sel)])) +
         commonopts
     }
   )
@@ -100,11 +100,6 @@ server <- function(input, output) {
     arrange(monthact, activity, price, manual) %>%
     mutate(monthact2 = factor(monthact))
   })
-  
-  # rearrange month factor
-  #bplotdata()$monthact2 <- reactive({ factor(bplotdata()$monthact) })
-  #levels(bplotdata()$monthact2) <- reactive({ strftime(levels(bplotdata()$monthact2), format = "%b\n%y") })
-  #bplotdata()$monthact2 <- reactive({ factor(bplotdata()$monthact2,levels(bplotdata()$monthact2)[c(1,4,2,5,3,6)]) })
   
   # plot
   output$bargraph <- renderPlot({
