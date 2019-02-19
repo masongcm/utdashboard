@@ -1,6 +1,11 @@
 
+require(shiny)
+require(shinythemes)
+require(shinyWidgets)
+
 # import data
 filename <- here::here("data/tours_current.csv")
+source(here::here("helpers/utclean.R"))
 utdata <- utclean(filename)
 activities <- utdata$activities
 

@@ -36,7 +36,7 @@ ui <- fluidPage(
       checkboxGroupInput("tour_sel",
                          label = "Select tours",
                          choices = levels(activities$activity),
-                         selected = levels(activities$activity)
+                         selected = levels(activities$activity)[!levels(activities$activity) %in% c("Camden", "Brixton")]
       ),
       
       # Measure selection
